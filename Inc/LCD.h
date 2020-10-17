@@ -17,9 +17,7 @@
 //TODO: Функция управления курсором
 //TODO: Функция управления вкл/выкл дисплей
 //TODO: Функция управления миганием знакоместа
-//TODO: Функция очистки дисплея
 //TODO: Функция сдвига дисплея
-//TODO: Функция home
 //TODO: Проверить другие стандартные фичи и написать функции
 
 //LCD initialization function
@@ -36,5 +34,9 @@ void LCD_printStr(char str[]);
 void LCD_setCursor(uint8_t x, uint8_t y);
 //Function of loading custom character into LCD
 void LCD_writeCustomChar(uint8_t addr, uint8_t array[8]);
+//Function of display cleaning
+void LCD_clear(void);
+//Function of returning cursor and display position
+void LCD_home(void);
 
 #endif

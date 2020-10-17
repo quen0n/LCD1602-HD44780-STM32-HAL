@@ -46,8 +46,7 @@ void LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
 
 	LCD_sendCmd(0b00101000);
 	LCD_sendCmd(0b00001100);
-	LCD_sendCmd(0b00000001);
-	HAL_Delay(2);
+	LCD_clear();
 	LCD_sendCmd(0b00000110);
 }
 //Function of printing char on LCD
@@ -69,4 +68,14 @@ void LCD_writeCustomChar(uint8_t addr, uint8_t array[8]) {
 		LCD_sendData(array[i]);
 	}
 	LCD_setCursor(0, 0);
+}
+//Function of display cleaning
+void LCD_clear(void) {
+	LCD_sendCmd(0x01);
+	HAL_Delay(2);
+}
+//Function of returning cursor and display position
+void LCD_home(void) {
+	LCD_sendCmd(0x03);
+	HAL_Delay(2);
 }
