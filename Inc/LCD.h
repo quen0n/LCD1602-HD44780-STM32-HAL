@@ -38,5 +38,13 @@ void LCD_writeCustomChar(uint8_t addr, uint8_t array[8]);
 void LCD_clear(void);
 //Function of returning cursor and display position
 void LCD_home(void);
+//Backlight on/off function
+void LCD_backlight(uint8_t state);
+//Display on/off function
+void LCD_display(uint8_t state);
+//Cursor on/off function
+void LCD_cursor(uint8_t state);
+//Blinks on/off function
+void LCD_blinks(uint8_t state);
 
 #endif

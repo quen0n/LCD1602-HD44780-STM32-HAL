@@ -3,7 +3,8 @@ static I2C_HandleTypeDef *i2c;
 static uint8_t DA;
 //Variable for storing the bus value
 static uint8_t bus = 0x08;
-
+//Display on/off control value
+static uint8_t displayControlValue = 0x0C;
 //Bus data recording function
 static HAL_StatusTypeDef _writeBus(void) {
 	uint8_t busBuff[1] = {bus};
@@ -45,7 +46,7 @@ void LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
 	_sendHalfByte(0b0010, 0);
 
 	LCD_sendCmd(0b00101000);
-	LCD_sendCmd(0b00001100);
+	LCD_sendCmd(displayControlValue);
 	LCD_clear();
 	LCD_sendCmd(0b00000110);
 }
@@ -78,4 +79,41 @@ void LCD_clear(void) {
 void LCD_home(void) {
 	LCD_sendCmd(0x03);
 	HAL_Delay(2);
+}
+
+//Backlight on/off function
+void LCD_backlight(uint8_t state) {
+	if (state) {
+		bus |= (1<<3);
+	} else {
+		bus &= ~(1<<3);
+	}
+	_writeBus();
+}
+//Display on/off function
+void LCD_display(uint8_t state) {
+	if (state) {
+		displayControlValue |= (1<<2);
+	} else {
+		displayControlValue &= ~(1<<2);
+	}
+	LCD_sendCmd(displayControlValue);
+}
+//Cursor on/off function
+void LCD_cursor(uint8_t state) {
+	if (state) {
+		displayControlValue |= (1<<1);
+	} else {
+		displayControlValue &= ~(1<<1);
+	}
+	LCD_sendCmd(displayControlValue);
+}
+//Blinks on/off function
+void LCD_blinks(uint8_t state) {
+	if (state) {
+		displayControlValue |= (1<<0);
+	} else {
+		displayControlValue &= ~(1<<0);
+	}
+	LCD_sendCmd(displayControlValue);
 }
