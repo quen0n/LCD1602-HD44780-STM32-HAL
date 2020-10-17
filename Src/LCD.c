@@ -1,15 +1,15 @@
 #include "LCD.h"
-I2C_HandleTypeDef *i2c;
-
+static I2C_HandleTypeDef *i2c;
+static uint8_t DA;
 //Variable for storing the bus value
 static uint8_t bus = 0x08;
 
 //Bus data recording function
 static HAL_StatusTypeDef _writeBus(void) {
 	uint8_t busBuff[1] = {bus};
-	HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(i2c, LCD_I2C_ADDRES, 10, 0xFF);
+	HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(i2c, DA, 10, 0xFF);
 	if (status != HAL_OK) return status;
-	return HAL_I2C_Master_Transmit(i2c, LCD_I2C_ADDRES, busBuff, 1, 0xFF);
+	return HAL_I2C_Master_Transmit(i2c, DA, busBuff, 1, 0xFF);
 }
 
 //Function of sending half a byte of information
@@ -33,9 +33,9 @@ void LCD_sendData(uint8_t data) {
 	_sendHalfByte(data, 1);
 }
 //Display initialization function
-void LCD_init(I2C_HandleTypeDef *_i2c) {
+void LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
 	i2c = _i2c;
-
+	DA = dAddr;
 	HAL_Delay(40);
 
 	_sendHalfByte(0b0011, 0);

@@ -14,7 +14,6 @@
 //TODO: Поддержка русского языка для дисплеев, котоыре его реально поддерживают
 //TODO: Указание типа дисплея - 1602 или 2004
 //TODO: Поддержка шрифта 5х10 (чекать кастом чары)
-//TODO: Указывать при инициализации адрес дисплея на шине
 //TODO: Функция управления курсором
 //TODO: Функция управления вкл/выкл дисплей
 //TODO: Функция управления миганием знакоместа
@@ -24,7 +23,7 @@
 //TODO: Проверить другие стандартные фичи и написать функции
 
 //LCD initialization function
-void LCD_init(I2C_HandleTypeDef *i2c);
+void LCD_init(I2C_HandleTypeDef *i2c, uint8_t displayAddress);
 //Function of sending data to LCD
 void LCD_sendData(uint8_t data);
 //Function of sending instruction to LCD
