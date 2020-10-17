@@ -25,11 +25,17 @@
 //TODO: printChar
 //TODO: printStr
 
+//Display initialization function
 void LCD_init(I2C_HandleTypeDef *i2c);
+//Function of sending data to LCD
 void LCD_sendData(uint8_t data);
+//Function of sending instruction to LCD
 void LCD_sendCmd(uint8_t data);
+//Function of printing string on LCD
 void LCD_print(char str[]);
+//Cursor position setting function
 void LCD_setCursor(uint8_t x, uint8_t y);
+//Function of loading custom character into LCD
 void LCD_writeCustomChar(uint8_t addr, uint8_t array[8]);
 
 #endif
