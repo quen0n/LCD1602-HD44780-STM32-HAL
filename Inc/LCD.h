@@ -22,17 +22,17 @@
 //TODO: Функция сдвига дисплея
 //TODO: Функция home
 //TODO: Проверить другие стандартные фичи и написать функции
-//TODO: printChar
-//TODO: printStr
 
-//Display initialization function
+//LCD initialization function
 void LCD_init(I2C_HandleTypeDef *i2c);
 //Function of sending data to LCD
 void LCD_sendData(uint8_t data);
 //Function of sending instruction to LCD
 void LCD_sendCmd(uint8_t data);
+//Function of printing char on LCD
+void LCD_printChar(char c);
 //Function of printing string on LCD
-void LCD_print(char str[]);
+void LCD_printStr(char str[]);
 //Cursor position setting function
 void LCD_setCursor(uint8_t x, uint8_t y);
 //Function of loading custom character into LCD

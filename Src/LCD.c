@@ -50,8 +50,12 @@ void LCD_init(I2C_HandleTypeDef *_i2c) {
 	HAL_Delay(2);
 	LCD_sendCmd(0b00000110);
 }
+//Function of printing char on LCD
+void LCD_printChar(char c) {
+	LCD_sendData(c);
+}
 //Function of printing string on LCD
-void LCD_print(char str[]) {
+void LCD_printStr(char str[]) {
 	for(uint8_t i = 0; str[i]; i++) LCD_sendData(str[i]);
 }
 //Cursor position setting function
