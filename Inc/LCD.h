@@ -21,6 +21,9 @@
 //Enable Unicode support
 #define LCD_UNICODE_SUPPORT
 
+//Enable redirect printf to LCD
+#define LCD_PRINTF_ENABLE
+
 typedef enum {
 	LCD_LEFT,
 	LCD_RIGHT,
@@ -64,12 +67,12 @@ void LCD_shiftCursor(LCD_dir_t dir, uint8_t amount);
 void LCD_shiftDisplay(LCD_dir_t dir, uint8_t amount);
 //Enabling/disabling cursor position control
 void LCD_cursorControl(LCD_state_t state);
+//Formatted printing function on LCD
+void LCD_printf(const char * __restrict format, ...);
 #endif
-
 //TODO: Выбор адреса дисплея для возможности использования двух и более
 //TODO: Подробное комментирование функций, шапки по стандарту
 //TODO: Проверить другие стандартные фичи и написать функции
 //TODO: Псевдоподдержка русского языка
 //TODO: Поддержка обычных дисплеев с 4 и 8-битной схемой
 //TODO: Поддержка шрифта 5х10 (чекать кастом чары)
-//TODO: Как насчёт LCD_printf?

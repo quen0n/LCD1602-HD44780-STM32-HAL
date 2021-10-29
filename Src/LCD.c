@@ -6,6 +6,13 @@
 
 #include "LCD.h"
 
+#ifdef LCD_PRINTF_ENABLE
+#include <stdio.h>
+#include <stdarg.h>
+#endif
+
+
+
 //I2C interface pointer
 static I2C_HandleTypeDef *i2c;
 //LCD I2C address
@@ -306,3 +313,23 @@ void LCD_shiftDisplay(LCD_dir_t dir, uint8_t amount) {
 void LCD_cursorControl(LCD_state_t state) {
 	cursorControl = state;
 }
+
+
+//Overriding standard output function
+int _write(int file, char *ptr, int len) {
+	LCD_printStr(ptr);
+	return len;
+}
+
+#ifdef LCD_PRINTF_ENABLE
+/**
+ * \brief 			Formatted printing function on LCD
+ * \param[in]		format: formatted string like a printf
+ */
+void LCD_printf(const char * __restrict format, ...) {
+	va_list argptr;
+	va_start(argptr, format);
+	vfprintf(stderr, format, argptr);
+	va_end(argptr);
+}
+#endif
