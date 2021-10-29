@@ -67,16 +67,16 @@ void LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
 	DA = dAddr;
 	HAL_Delay(40);
 
-	_sendHalfByte(0b0011, 0);
+	_sendHalfByte(0x03, 0);
 	HAL_Delay(4);
-	_sendHalfByte(0b0011, 0);
-	_sendHalfByte(0b0011, 0);
-	_sendHalfByte(0b0010, 0);
+	_sendHalfByte(0x03, 0);
+	_sendHalfByte(0x03, 0);
+	_sendHalfByte(0x02, 0);
 
-	LCD_sendCmd(0b00101000);
+	LCD_sendCmd(0x28);
 	LCD_sendCmd(displayControlValue);
 	LCD_clear();
-	LCD_sendCmd(0b00000110);
+	LCD_sendCmd(0x06);
 }
 /**
  * \brief           Function of printing char on LCD
@@ -98,7 +98,7 @@ void LCD_printStr(char str[]) {
  * \param[in]       y: Vertical position 0-1 (0-3 for 20x4)
  */
 void LCD_setCursor(uint8_t x, uint8_t y) {
-	LCD_sendCmd(0b10000000 | (x + y*0x40));
+	LCD_sendCmd(0x80 | (x + y*0x40));
 }
 /**
  * \brief           Function of loading custom character into LCD
@@ -107,8 +107,8 @@ void LCD_setCursor(uint8_t x, uint8_t y) {
  * \param[in]       addr: The address where the symbol will be located 0-7
  * \param[in]       array: Pointer to array with 8 lines of user character
  */
-void LCD_writeCustomChar(uint8_t addr, uint8_t array[8]) {
-	LCD_sendCmd(0b01000000 | (addr*8));
+void LCD_createChar(uint8_t addr, const uint8_t array[8]) {
+	LCD_sendCmd(0x40 | (addr*8));
 	for(uint8_t i = 0; i < 8; i++) {
 		LCD_sendData(array[i]);
 	}
@@ -168,7 +168,7 @@ void LCD_cursor(uint8_t state) {
 	LCD_sendCmd(displayControlValue);
 }
 /**
- * \brief 			Familiar blinks on/off function
+ * \brief 			Character blinks on/off function
  * \param[in]		state: Blink familiar status. 0 - off, 1 - on
  */
 void LCD_blinks(uint8_t state) {

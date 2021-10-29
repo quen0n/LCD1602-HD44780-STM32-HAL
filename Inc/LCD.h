@@ -12,17 +12,6 @@
 
 #define LCD_I2C_ADDRES 0x40
 
-//TODO: Подробное комментирование функций, шапки по стандарту
-//TODO: Функция сдвига дисплея
-//TODO: Проверить другие стандартные фичи и написать функции
-//TODO: Слежение за положением курсора, автоперенос текста (может выключаться)
-//TODO: Поддержка \r \n
-//TODO: Псевдоподдержка русского языка
-//TODO: Поддержка обычных дисплеев с 4 и 8-битной схемой
-//TODO: Поддержка русского языка для дисплеев, котоыре его реально поддерживают
-//TODO: Указание типа дисплея - 1602 или 2004
-//TODO: Поддержка шрифта 5х10 (чекать кастом чары)
-
 //LCD initialization function
 void LCD_init(I2C_HandleTypeDef *i2c, uint8_t displayAddress);
 //Function of sending data to LCD
@@ -36,7 +25,7 @@ void LCD_printStr(char str[]);
 //Cursor position setting function
 void LCD_setCursor(uint8_t x, uint8_t y);
 //Function of loading custom character into LCD
-void LCD_writeCustomChar(uint8_t addr, uint8_t array[8]);
+void LCD_createChar(uint8_t addr, const uint8_t array[8]);
 //Function of display cleaning
 void LCD_clear(void);
 //Function of returning cursor and display position
@@ -51,3 +40,17 @@ void LCD_cursor(uint8_t state);
 void LCD_blinks(uint8_t state);
 
 #endif
+
+//TODO: В режиме i2c функция инициализации должна возвращать статус - успех или ошибка
+//TODO: Функция сдвига дисплея
+//TODO: Указание типа дисплея - 1602 или 2004
+//TODO: Подробное комментирование функций, шапки по стандарту
+//TODO: Проверить другие стандартные фичи и написать функции
+//TODO: Слежение за положением курсора, автоперенос текста (может выключаться)
+//TODO: Поддержка \r \n
+//TODO: Псевдоподдержка русского языка
+//TODO: Поддержка обычных дисплеев с 4 и 8-битной схемой
+//TODO: Поддержка русского языка для дисплеев, которые его реально поддерживают
+//TODO: Поддержка шрифта 5х10 (чекать кастом чары)
+//TODO: Как насчёт LCD_printf?
+//TODO: Добавить состояния ON или OFF с помощью typedef
