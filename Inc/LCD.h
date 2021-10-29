@@ -13,7 +13,7 @@
 #define LCD_I2C_ADDRES 0x40
 
 //LCD initialization function
-void LCD_init(I2C_HandleTypeDef *i2c, uint8_t displayAddress);
+HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *i2c, uint8_t displayAddress);
 //Function of sending data to LCD
 void LCD_sendData(uint8_t data);
 //Function of sending instruction to LCD
@@ -41,7 +41,6 @@ void LCD_blinks(uint8_t state);
 
 #endif
 
-//TODO: В режиме i2c функция инициализации должна возвращать статус - успех или ошибка
 //TODO: Функция сдвига дисплея
 //TODO: Указание типа дисплея - 1602 или 2004
 //TODO: Подробное комментирование функций, шапки по стандарту

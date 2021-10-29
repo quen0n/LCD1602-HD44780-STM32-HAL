@@ -61,10 +61,14 @@ void LCD_sendData(uint8_t data) {
  * \brief           Display initialization function
  * \param[in]       _i2c: Pointer to I2C interface
  * \param[in]       dAddr: LCD address on I2C bus
+ * \return          I2C status
  */
-void LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
+HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
 	i2c = _i2c;
 	DA = dAddr;
+	HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(i2c, DA, 10, 0xFF);
+	if (status != HAL_OK) return status;
+
 	HAL_Delay(40);
 
 	_sendHalfByte(0x03, 0);
@@ -77,6 +81,7 @@ void LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
 	LCD_sendCmd(displayControlValue);
 	LCD_clear();
 	LCD_sendCmd(0x06);
+	return HAL_OK;
 }
 /**
  * \brief           Function of printing char on LCD
