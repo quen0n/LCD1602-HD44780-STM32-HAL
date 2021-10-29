@@ -184,3 +184,26 @@ void LCD_blinks(uint8_t state) {
 	}
 	LCD_sendCmd(displayControlValue);
 }
+/**
+ * \brief 			Cusor shift funtion
+ * \param[in]		dir: Direction - LCD_LEFT or LCD_RIGHT
+ * \param[in]		amount: The number of characters by which the cursor will be moved
+ */
+void LCD_shiftCursor(LCD_dir_t dir, uint8_t amount) {
+	while(amount) {
+		LCD_sendCmd(0x10 | (dir << 2));
+		amount--;
+	}
+}
+
+/**
+ * \brief 			Display shift funtion
+ * \param[in]		dir: Direction - LCD_LEFT or LCD_RIGHT
+ * \param[in]		amount: The number of characters by which the display will be moved
+ */
+void LCD_shiftDisplay(LCD_dir_t dir, uint8_t amount) {
+	while(amount) {
+		LCD_sendCmd(0x18 | (dir << 2));
+		amount--;
+	}
+}

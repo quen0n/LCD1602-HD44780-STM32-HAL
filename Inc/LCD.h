@@ -12,6 +12,11 @@
 
 #define LCD_I2C_ADDRES 0x40
 
+typedef enum {
+	LCD_LEFT,
+	LCD_RIGHT
+} LCD_dir_t;
+
 //LCD initialization function
 HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *i2c, uint8_t displayAddress);
 //Function of sending data to LCD
@@ -38,10 +43,12 @@ void LCD_display(uint8_t state);
 void LCD_cursor(uint8_t state);
 //Blinks on/off function
 void LCD_blinks(uint8_t state);
-
+//Cusor shift funtion
+void LCD_shiftCursor(LCD_dir_t dir, uint8_t amount);
+//Display shift funtion
+void LCD_shiftDisplay(LCD_dir_t dir, uint8_t amount);
 #endif
 
-//TODO: Функция сдвига дисплея
 //TODO: Указание типа дисплея - 1602 или 2004
 //TODO: Подробное комментирование функций, шапки по стандарту
 //TODO: Проверить другие стандартные фичи и написать функции
