@@ -22,6 +22,25 @@ static uint8_t dWidth, dLines;
 static uint8_t currentX = 0, currentY = 0;
 
 /**
+ * \brief           Converting a Cyrillic character from ASCII to a display character generator table
+ * \param[in]       c: ASCII character
+ * \return          LCD CGRAM character
+ */
+static char _ASCIItoDisplay(char c) {
+	const char cyrillicAlphabet[64] = {
+	  //A    Б    В    Г    Д    Е    Ж    З    И    Й    К    Л    М    Н    О    П
+		0x41,0xA0,0x42,0xA1,0xE0,0x45,0xA3,0xA4,0xA5,0xA6,0x4B,0xA7,0x4D,0x48,0x4F,0xA8,
+	  //Р    С    Т    У    Ф    Х    Ц    Ч    Ш    Щ    Ъ    Ы    Ь    Э    Ю    Я
+		0x50,0x43,0x54,0xA9,0xAA,0x58,0xE1,0xAB,0xAC,0xE2,0xAD,0xAE,0x62,0xAF,0xB0,0xB1,
+	  //а    б    в    г    д    е    ж    з    и    й    к    л    м    н    о    п
+		0x61,0xB2,0xB3,0xB4,0xE3,0x65,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0x6F,0xBE,
+	  //р    с    т    у    ф    х    ц    ч    ш    щ    ъ    ы    ь    э    ю    я
+		0x70,0x63,0xBF,0x79,0xE4,0x78,0xE5,0xC0,0xC1,0xE6,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,
+	};
+	return cyrillicAlphabet[c-192];
+}
+
+/**
  * \brief           Bus data recording function
  * \return          I2C status
  */
@@ -105,6 +124,27 @@ void LCD_printChar(char c) {
 		LCD_setCursor(currentX, ++currentY);
 		return;
 	}
+
+#ifdef LCD_UNICODE_SUPPORT
+	static char highByte = 0;
+	if (highByte) {
+		if (highByte ==  0xD0) c = ((uint16_t) highByte<<8 | c) - 0xCFD0;
+		if (highByte ==  0xD1) c = ((uint16_t) highByte<<8 | c) - 0xD090;
+		highByte = 0;
+		#ifdef LCD_CYRILLIC_SUPPORT
+		if (c == 0xB1) c = 0xA2; //Ё
+		if (c == 0x01) c = 0xB5; //ё
+		#endif
+	} else if(c == 0xD0 || c == 0xD1) {
+		highByte = c;
+		return;
+	}
+#endif
+
+#ifdef LCD_CYRILLIC_SUPPORT
+	if (c >= 192) c = _ASCIItoDisplay(c);
+#endif
+
 	LCD_sendData(c);
 
 	currentX++;
@@ -186,9 +226,9 @@ void LCD_home(void) {
 }
 /**
  * \brief           Backlight on/off function
- * \param[in]       state: Display backlight status. 0 - backlight off, 1 - backlight on
+ * \param[in]       state: Display backlight status. LCD_OFF - backlight off, LCD_ON - backlight on
  */
-void LCD_backlight(uint8_t state) {
+void LCD_backlight(LCD_state_t state) {
 	if (state) {
 		bus |= (1<<3);
 	} else {
@@ -200,9 +240,9 @@ void LCD_backlight(uint8_t state) {
  * \brief           Display on/off function
  * \note			The function does not clear the display.
  * 					After turning on the display, the previous image returns
- * \param[in]       state: Display status. 0 - off, 1 - on
+ * \param[in]       state: Display status. LCD_OFF - off, LCD_ON - on
  */
-void LCD_display(uint8_t state) {
+void LCD_display(LCD_state_t state) {
 	if (state) {
 		displayControlValue |= (1<<2);
 	} else {
@@ -212,9 +252,9 @@ void LCD_display(uint8_t state) {
 }
 /**
  * \brief           Cursor on/off function
- * \param[in]       state: Display backlight status. 0 - backlight off, 1 - backlight on
+ * \param[in]       state: Display backlight status. LCD_OFF - backlight off, LCD_ON - backlight on
  */
-void LCD_cursor(uint8_t state) {
+void LCD_cursor(LCD_state_t state) {
 	if (state) {
 		displayControlValue |= (1<<1);
 	} else {
@@ -224,9 +264,9 @@ void LCD_cursor(uint8_t state) {
 }
 /**
  * \brief 			Character blinks on/off function
- * \param[in]		state: Blink familiar status. 0 - off, 1 - on
+ * \param[in]		state: Blink familiar status. LCD_OFF - off, LCD_ON - on
  */
-void LCD_blinks(uint8_t state) {
+void LCD_blinks(LCD_state_t state) {
 	if (state) {
 		displayControlValue |= (1<<0);
 	} else {
@@ -261,8 +301,8 @@ void LCD_shiftDisplay(LCD_dir_t dir, uint8_t amount) {
 }
 /**
  * \brief 			Enabling/disabling cursor position control
- * \param[in]		state: 1 - the library will automatically move the cursor when leaving the display, 0 - off
+ * \param[in]		state: LCD_ON - the library will automatically move the cursor when leaving the display, LCD_OFF - off
  */
-void LCD_cursorControl(uint8_t state) {
+void LCD_cursorControl(LCD_state_t state) {
 	cursorControl = state;
 }

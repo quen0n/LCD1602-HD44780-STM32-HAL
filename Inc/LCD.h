@@ -10,13 +10,27 @@
 
 #include "main.h"
 
+//LCD PCF8574-based I2C default address
 #define LCD_I2C_DEFAULT_ADDRESS 0x7E
+
+//Включить поддержку кириллических символов
+//Внимание! Работает только на дисплеях с русскими символами в памяти!
+//Для китайских используйте псевдоподдержку кириллицы
+#define LCD_CYRILLIC_SUPPORT
+
+//Enable Unicode support
+#define LCD_UNICODE_SUPPORT
 
 typedef enum {
 	LCD_LEFT,
 	LCD_RIGHT,
 	LCD_NONE
 } LCD_dir_t;
+
+typedef enum {
+	LCD_OFF,
+	LCD_ON
+} LCD_state_t;
 
 //LCD initialization function
 HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr, uint8_t width, uint8_t lines);
@@ -37,28 +51,25 @@ void LCD_clear(void);
 //Function of returning cursor and display position
 void LCD_home(void);
 //Backlight on/off function
-void LCD_backlight(uint8_t state);
+void LCD_backlight(LCD_state_t state);
 //Display on/off function
-void LCD_display(uint8_t state);
+void LCD_display(LCD_state_t state);
 //Cursor on/off function
-void LCD_cursor(uint8_t state);
+void LCD_cursor(LCD_state_t state);
 //Blinks on/off function
-void LCD_blinks(uint8_t state);
+void LCD_blinks(LCD_state_t state);
 //Cusor shift funtion
 void LCD_shiftCursor(LCD_dir_t dir, uint8_t amount);
 //Display shift funtion
 void LCD_shiftDisplay(LCD_dir_t dir, uint8_t amount);
 //Enabling/disabling cursor position control
-void LCD_cursorControl(uint8_t state);
+void LCD_cursorControl(LCD_state_t state);
 #endif
-//TODO: Добавить состояния ON или OFF с помощью typedef
-//TODO: Адрес как в ардуино
+
 //TODO: Выбор адреса дисплея для возможности использования двух и более
 //TODO: Подробное комментирование функций, шапки по стандарту
 //TODO: Проверить другие стандартные фичи и написать функции
 //TODO: Псевдоподдержка русского языка
 //TODO: Поддержка обычных дисплеев с 4 и 8-битной схемой
-//TODO: Поддержка русского языка для дисплеев, которые его реально поддерживают
 //TODO: Поддержка шрифта 5х10 (чекать кастом чары)
 //TODO: Как насчёт LCD_printf?
-
