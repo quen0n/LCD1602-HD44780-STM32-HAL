@@ -10,15 +10,16 @@
 
 #include "main.h"
 
-#define LCD_I2C_ADDRES 0x40
+#define LCD_I2C_DEFAULT_ADDRESS 0x7E
 
 typedef enum {
 	LCD_LEFT,
-	LCD_RIGHT
+	LCD_RIGHT,
+	LCD_NONE
 } LCD_dir_t;
 
 //LCD initialization function
-HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *i2c, uint8_t displayAddress);
+HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr, uint8_t width, uint8_t lines);
 //Function of sending data to LCD
 void LCD_sendData(uint8_t data);
 //Function of sending instruction to LCD
@@ -47,16 +48,17 @@ void LCD_blinks(uint8_t state);
 void LCD_shiftCursor(LCD_dir_t dir, uint8_t amount);
 //Display shift funtion
 void LCD_shiftDisplay(LCD_dir_t dir, uint8_t amount);
+//Enabling/disabling cursor position control
+void LCD_cursorControl(uint8_t state);
 #endif
-
-//TODO: Указание типа дисплея - 1602 или 2004
+//TODO: Добавить состояния ON или OFF с помощью typedef
+//TODO: Адрес как в ардуино
+//TODO: Выбор адреса дисплея для возможности использования двух и более
 //TODO: Подробное комментирование функций, шапки по стандарту
 //TODO: Проверить другие стандартные фичи и написать функции
-//TODO: Слежение за положением курсора, автоперенос текста (может выключаться)
-//TODO: Поддержка \r \n
 //TODO: Псевдоподдержка русского языка
 //TODO: Поддержка обычных дисплеев с 4 и 8-битной схемой
 //TODO: Поддержка русского языка для дисплеев, которые его реально поддерживают
 //TODO: Поддержка шрифта 5х10 (чекать кастом чары)
 //TODO: Как насчёт LCD_printf?
-//TODO: Добавить состояния ON или OFF с помощью typedef
+

@@ -15,6 +15,11 @@ static uint8_t DA;
 static uint8_t bus = 0x08;
 //Display on/off control value
 static uint8_t displayControlValue = 0x0C;
+//Enabling/disabling cursor position control value
+static uint8_t cursorControl = 1;
+
+static uint8_t dWidth, dLines;
+static uint8_t currentX = 0, currentY = 0;
 
 /**
  * \brief           Bus data recording function
@@ -61,11 +66,15 @@ void LCD_sendData(uint8_t data) {
  * \brief           Display initialization function
  * \param[in]       _i2c: Pointer to I2C interface
  * \param[in]       dAddr: LCD address on I2C bus
+ * \param[in]       width: Number of characters per line
+ * \param[in]       lines: Number of display lines
  * \return          I2C status
  */
-HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
+HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr, uint8_t width, uint8_t lines) {
 	i2c = _i2c;
 	DA = dAddr;
+	dWidth = width;
+	dLines = lines;
 	HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(i2c, DA, 10, 0xFF);
 	if (status != HAL_OK) return status;
 
@@ -88,14 +97,31 @@ HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr) {
  * \param[in]       c: LCD printable symbol
  */
 void LCD_printChar(char c) {
+	if(c == '\r') {
+		LCD_setCursor(0, currentY);
+		return;
+	}
+	if(c == '\n') {
+		LCD_setCursor(currentX, ++currentY);
+		return;
+	}
 	LCD_sendData(c);
+
+	currentX++;
+	if(cursorControl) {
+		if (currentX >= dWidth)  {
+			currentX = 0;
+			if (++currentY >= dLines) currentY = 0;
+			LCD_setCursor(currentX, currentY);
+		}
+	}
 }
 /**
  * \brief           Function of printing string on LCD
  * \param[in]       str: Pointer to array with string
  */
 void LCD_printStr(char str[]) {
-	for(uint8_t i = 0; str[i]; i++) LCD_sendData(str[i]);
+	for(uint8_t i = 0; str[i]; i++) LCD_printChar(str[i]);
 }
 /**
  * \brief           Cursor position setting function
@@ -103,7 +129,27 @@ void LCD_printStr(char str[]) {
  * \param[in]       y: Vertical position 0-1 (0-3 for 20x4)
  */
 void LCD_setCursor(uint8_t x, uint8_t y) {
-	LCD_sendCmd(0x80 | (x + y*0x40));
+	if(cursorControl) {
+		if (x >= dWidth) x = 0;
+		if (y >= dLines) y = 0;
+	}
+	currentX = x;
+	currentY = y;
+
+	switch(y) {
+	case 0:
+		LCD_sendCmd(x | 0x80);
+		break;
+	case 1:
+		LCD_sendCmd((0x40 + x) | 0x80);
+		break;
+	case 2:
+		LCD_sendCmd((0x14 + x) | 0x80);
+		break;
+	case 3:
+		LCD_sendCmd((0x54 + x) | 0x80);
+		break;
+	}
 }
 /**
  * \brief           Function of loading custom character into LCD
@@ -125,6 +171,8 @@ void LCD_createChar(uint8_t addr, const uint8_t array[8]) {
  */
 void LCD_clear(void) {
 	LCD_sendCmd(0x01);
+	currentX = 0;
+	currentY = 0;
 	HAL_Delay(2);
 }
 /**
@@ -132,6 +180,8 @@ void LCD_clear(void) {
  */
 void LCD_home(void) {
 	LCD_sendCmd(0x03);
+	currentX = 0;
+	currentY = 0;
 	HAL_Delay(2);
 }
 /**
@@ -190,7 +240,9 @@ void LCD_blinks(uint8_t state) {
  * \param[in]		amount: The number of characters by which the cursor will be moved
  */
 void LCD_shiftCursor(LCD_dir_t dir, uint8_t amount) {
-	while(amount) {
+	if ((currentX + amount >= dWidth) && cursorControl) amount = dWidth-currentX-1;
+	currentX += amount;
+	while(amount > 0) {
 		LCD_sendCmd(0x10 | (dir << 2));
 		amount--;
 	}
@@ -206,4 +258,11 @@ void LCD_shiftDisplay(LCD_dir_t dir, uint8_t amount) {
 		LCD_sendCmd(0x18 | (dir << 2));
 		amount--;
 	}
+}
+/**
+ * \brief 			Enabling/disabling cursor position control
+ * \param[in]		state: 1 - the library will automatically move the cursor when leaving the display, 0 - off
+ */
+void LCD_cursorControl(uint8_t state) {
+	cursorControl = state;
 }
