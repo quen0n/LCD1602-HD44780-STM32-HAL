@@ -28,6 +28,7 @@ static uint8_t cursorControl = 1;
 static uint8_t dWidth, dLines;
 static uint8_t currentX = 0, currentY = 0;
 
+#ifdef LCD_CYRILLIC_SUPPORT
 /**
  * \brief           Converting a Cyrillic character from ASCII to a display character generator table
  * \param[in]       c: ASCII character
@@ -46,7 +47,7 @@ static char _ASCIItoDisplay(char c) {
 	};
 	return cyrillicAlphabet[c-192];
 }
-
+#endif
 /**
  * \brief           Bus data recording function
  * \return          I2C status
