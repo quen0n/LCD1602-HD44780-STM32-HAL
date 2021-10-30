@@ -124,12 +124,19 @@ HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr, uint8_t width
  * \param[in]       c: LCD printable symbol
  */
 void LCD_printChar(char c) {
+	//Carriage return
 	if(c == '\r') {
 		LCD_setCursor(0, currentY);
 		return;
 	}
+	//Line break
 	if(c == '\n') {
 		LCD_setCursor(currentX, ++currentY);
+		return;
+	}
+	//Screen cleaning
+	if(c == '\f') {
+		LCD_clear();
 		return;
 	}
 
