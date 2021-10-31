@@ -9,8 +9,17 @@
 
 #include "main.h"
 
-//LCD PCF8574-based I2C default address
-#define LCD_I2C_DEFAULT_ADDRESS 0x7E
+/*************** SETTINGS ***************/
+//Enable redirect printf to LCD
+#define LCD_PRINTF_ENABLE
+//Enable Unicode support
+//#define LCD_UNICODE_SUPPORT
+
+//Set display interface. Values:
+// 0 - i2c interface (SDA, SCL)
+// 1 - 4 bit parallel interface (RS, E, D4, D5, D6, D7). RW connected to GND
+// 2 - 8 bit parallel interface (RS, E, D0, D1, D2, D3, D4, D5, D6, D7). RW connected to GND
+#define LCD_INTERFACE 0
 
 //Включить поддержку кириллических символов
 //Внимание! Работает только на дисплеях с русскими символами в памяти!
@@ -24,11 +33,11 @@
 //Если вы используйте STM32 CubeIDE включите поддержку Unicode
 //#define LCD_CYRILLIC_PSEUDOSUPPORT
 
-//Enable Unicode support
-//#define LCD_UNICODE_SUPPORT
+#if LCD_INTERFACE != 0
+#define LCD_BL_PORT GPIOB
+#define LCD_BL_PIN	GPIO_PIN_6
+#endif
 
-//Enable redirect printf to LCD
-#define LCD_PRINTF_ENABLE
 
 typedef enum {
 	LCD_LEFT,
@@ -41,8 +50,17 @@ typedef enum {
 	LCD_ON
 } LCD_state_t;
 
-//LCD initialization function
-HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr, uint8_t width, uint8_t lines);
+#if LCD_INTERFACE == 0
+	//LCD initialization function
+	HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr, uint8_t width, uint8_t lines);
+	//LCD PCF8574-based I2C default address
+	#define LCD_I2C_DEFAULT_ADDRESS 0x7E
+#else
+	//LCD initialization function
+	void LCD_init(uint8_t width, uint8_t lines);
+#endif
+
+
 //Function of sending data to LCD
 void LCD_sendData(uint8_t data);
 //Function of sending instruction to LCD
@@ -77,7 +95,7 @@ void LCD_cursorControl(LCD_state_t state);
 void LCD_printf(const char * __restrict format, ...);
 #endif
 
-//TODO: Поддержка обычных дисплеев с 4 и 8-битной схемой
+//TODO: Поддержка дисплеев с 8-битной схемой
 //TODO: Проверить другие стандартные фичи и написать функции
 //TODO: Выбор адреса дисплея для возможности использования двух и более
 //TODO: Подробное комментирование функций, шапки по стандарту

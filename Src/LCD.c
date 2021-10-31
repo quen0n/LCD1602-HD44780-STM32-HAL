@@ -11,8 +11,7 @@
 #include <stdarg.h>
 #endif
 
-
-
+#if LCD_INTERFACE == 0
 //I2C interface pointer
 static I2C_HandleTypeDef *i2c;
 //LCD I2C address
@@ -20,6 +19,7 @@ static uint8_t DA;
 
 //Variable for storing the bus value
 static uint8_t bus = 0x08;
+#endif
 //Display on/off control value
 static uint8_t displayControlValue = 0x0C;
 //Enabling/disabling cursor position control value
@@ -28,103 +28,9 @@ static uint8_t cursorControl = 1;
 static uint8_t dWidth, dLines;
 static uint8_t currentX = 0, currentY = 0;
 
-#ifdef LCD_CYRILLIC_SUPPORT
-/**
- * \brief           Converting a Cyrillic character from ASCII to a display character generator table
- * \param[in]       c: ASCII character
- * \return          LCD CGRAM character
- */
-static char _ASCIItoDisplay(char c) {
-	const char cyrillicAlphabet[64] = {
-	  //A    Б    В    Г    Д    Е    Ж    З    И    Й    К    Л    М    Н    О    П
-		0x41,0xA0,0x42,0xA1,0xE0,0x45,0xA3,0xA4,0xA5,0xA6,0x4B,0xA7,0x4D,0x48,0x4F,0xA8,
-	  //Р    С    Т    У    Ф    Х    Ц    Ч    Ш    Щ    Ъ    Ы    Ь    Э    Ю    Я
-		0x50,0x43,0x54,0xA9,0xAA,0x58,0xE1,0xAB,0xAC,0xE2,0xAD,0xAE,0x62,0xAF,0xB0,0xB1,
-	  //а    б    в    г    д    е    ж    з    и    й    к    л    м    н    о    п
-		0x61,0xB2,0xB3,0xB4,0xE3,0x65,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0x6F,0xBE,
-	  //р    с    т    у    ф    х    ц    ч    ш    щ    ъ    ы    ь    э    ю    я
-		0x70,0x63,0xBF,0x79,0xE4,0x78,0xE5,0xC0,0xC1,0xE6,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,
-	};
-	return cyrillicAlphabet[c-192];
-}
-#endif
-
-#ifdef LCD_CYRILLIC_PSEUDOSUPPORT
-const uint8_t cyrillicBitmaps[][8] = {
-	{0x1F, 0x11, 0x10, 0x1E, 0x11, 0x11, 0x1E, 0x00}, //Б
-	{0x1F, 0x11, 0x10, 0x10, 0x10, 0x10, 0x10, 0x00}, //Г
-	{0x15, 0x15, 0x15, 0x0E, 0x15, 0x15, 0x15, 0x00}, //Ж
-	{0x11, 0x11, 0x13, 0x15, 0x19, 0x11, 0x11, 0x00}, //И
-	{0x0A, 0x04, 0x11, 0x13, 0x15, 0x19, 0x11, 0x00}, //Й
-	{0x0F, 0x05, 0x05, 0x05, 0x05, 0x15, 0x09, 0x00}, //Л
-	{0x1F, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x00}, //П
-	{0x04, 0x0E, 0x15, 0x15, 0x15, 0x0E, 0x04, 0x00}, //Ф
-	{0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x1F, 0x01}, //Ц
-	{0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x1F, 0x00}, //Ш
-	{0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x1F, 0x01}, //Щ
-	{0x18, 0x08, 0x08, 0x0E, 0x09, 0x09, 0x0E, 0x00}, //Ъ
-	{0x11, 0x11, 0x11, 0x19, 0x15, 0x15, 0x19, 0x00}, //Ы
-	{0x0E, 0x11, 0x01, 0x07, 0x01, 0x11, 0x0E, 0x00}, //Э
-	{0x12, 0x15, 0x15, 0x1D, 0x15, 0x15, 0x12, 0x00}, //Ю
-	{0x0F, 0x11, 0x11, 0x0F, 0x05, 0x09, 0x11, 0x00}, //Я
-	{0x00, 0x00, 0x0F, 0x05, 0x09, 0x1F, 0x11, 0x00}, //д
-	{0x00, 0x00, 0x15, 0x15, 0x0E, 0x15, 0x15, 0x00}, //ж
-	{0x00, 0x04, 0x04, 0x0E, 0x15, 0x15, 0x0E, 0x04}, //ф
-	{0x00, 0x00, 0x12, 0x12, 0x12, 0x12, 0x1F, 0x01}, //ц
-	{0x00, 0x00, 0x15, 0x15, 0x15, 0x15, 0x1F, 0x00}, //ш
-	{0x00, 0x00, 0x15, 0x15, 0x15, 0x15, 0x1F, 0x01}, //щ
-	{0x00, 0x00, 0x18, 0x08, 0x0E, 0x09, 0x0E, 0x00}, //ъ
-	{0x00, 0x00, 0x11, 0x11, 0x19, 0x15, 0x19, 0x00}, //ы
-	{0x00, 0x00, 0x0E, 0x11, 0x07, 0x11, 0x0E, 0x00}, //э
-	{0x00, 0x00, 0x12, 0x15, 0x1D, 0x15, 0x12, 0x00}, //ю
-	{0x00, 0x00, 0x0F, 0x11, 0x0F, 0x09, 0x11, 0x00}, //я
-};
-
-/**
- * \brief           Converting a Cyrillic character from ASCII to a display character generator table
- * \param[in]       c: ASCII character
- * \return          LCD CGRAM character
- */
-static char _ASCIItoDisplay(char c) {
-	const char cyrillicAlphabet[64] = {
-	  //A    Б    В    Г    Д    Е    Ж    З    И    Й    К    Л    М    Н    О    П
-		'A', 0,  'B',  1,   'D', 'E', 2,  '3',  3,   4,  'K',  5,  'M', 'H', 'O',  6,
-	  //Р    С    Т    У    Ф    Х    Ц    Ч    Ш    Щ    Ъ    Ы    Ь    Э    Ю    Я
-	    'P', 'C', 'T', 'Y', 7,  'X',  8,   '4', 9,   10,  11,  12, 'b',  13,  14,  15,
-	  //а    б    в    г    д    е    ж    з    и    й    к    л    м    н    о    п
-		'a', '6', 'B', 0xD4,16,  'e', 17,  '3', 'u', 'u', 'k', 0xF7,'m', 'H', 'o', 'n',
-	  //р    с    т    у    ф    х    ц    ч    ш    щ    ъ    ы    ь    э    ю    я
-		'p', 'c', 'T', 'y', 18, 'x',  19,  '4', 20,  21,  22,  23,  'b', 24,  25,  26
-	};
-	if(cyrillicAlphabet[c-192] < 32) {
-		static uint8_t i = 0;
-		static char onDisplayCharacters[8];
-
-		int8_t f = -1;
-		for(uint8_t b = 0; b < 8; b++) {
-			if(onDisplayCharacters[b] == c) {
-				f = b;
-			}
-		}
-
-		if (f == -1) {
-			LCD_createChar(i, cyrillicBitmaps[(uint8_t)(cyrillicAlphabet[c-192])]);
-			onDisplayCharacters[i] = c;
-			uint8_t a = i;
-			if(++i > 7) i = 0;
-			return a;
-		} else {
-			return f;
-		}
-	}
 
 
-	return cyrillicAlphabet[c-192];
-}
-#endif
-
-
-
+#if LCD_INTERFACE == 0
 /**
  * \brief           Bus data recording function
  * \return          I2C status
@@ -151,6 +57,47 @@ static void _sendHalfByte(uint8_t data, uint8_t RSState) {
 }
 
 /**
+ * \brief           Backlight on/off function
+ * \param[in]       state: Display backlight status. LCD_OFF - backlight off, LCD_ON - backlight on
+ */
+void LCD_backlight(LCD_state_t state) {
+	if (state) {
+		bus |= (1<<3);
+	} else {
+		bus &= ~(1<<3);
+	}
+	_writeBus();
+}
+
+#else
+/**
+ * \brief           Function of sending half a byte of information
+ * \param[in]       data: Information to be sent to LCD
+ * \param[in]       RSState: State of RS. 0 - instruction, 1 - data
+ */
+static void _sendHalfByte(uint8_t data, uint8_t RSState) {
+	HAL_GPIO_WritePin(LCD_RS_GPIO_Port, LCD_RS_Pin, RSState);
+	HAL_GPIO_WritePin(LCD_DB4_GPIO_Port, LCD_DB4_Pin, data & (1<<0) ? 1 : 0);
+	HAL_GPIO_WritePin(LCD_DB5_GPIO_Port, LCD_DB5_Pin, data & (1<<1) ? 1 : 0);
+	HAL_GPIO_WritePin(LCD_DB6_GPIO_Port, LCD_DB6_Pin, data & (1<<2) ? 1 : 0);
+	HAL_GPIO_WritePin(LCD_DB7_GPIO_Port, LCD_DB7_Pin, data & (1<<3) ? 1 : 0);
+
+	HAL_GPIO_WritePin(LCD_E_GPIO_Port, LCD_E_Pin, 1);
+	HAL_GPIO_WritePin(LCD_E_GPIO_Port, LCD_E_Pin, 0);
+	//Small delay
+	for(volatile uint16_t i = 0; i < 500; i++);
+}
+
+/**
+ * \brief           Backlight on/off function
+ * \param[in]       state: Display backlight status. LCD_OFF - backlight off, LCD_ON - backlight on
+ */
+void LCD_backlight(LCD_state_t state) {
+	HAL_GPIO_WritePin(LCD_BL_PORT, LCD_BL_PIN, state);
+}
+
+#endif
+/**
  * \brief           Function of sending instruction to LCD
  * \param[in]       cmd: Instruction to be sent to LCD
  */
@@ -166,6 +113,8 @@ void LCD_sendData(uint8_t data) {
 	_sendHalfByte(data>>4, 1);
 	_sendHalfByte(data, 1);
 }
+
+#if LCD_INTERFACE == 0
 /**
  * \brief           Display initialization function
  * \param[in]       _i2c: Pointer to I2C interface
@@ -177,10 +126,21 @@ void LCD_sendData(uint8_t data) {
 HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr, uint8_t width, uint8_t lines) {
 	i2c = _i2c;
 	DA = dAddr;
-	dWidth = width;
-	dLines = lines;
 	HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(i2c, DA, 10, 0xFF);
 	if (status != HAL_OK) return status;
+#else
+	/**
+	 * \brief           Display initialization function
+	 * \param[in]       width: Number of characters per line
+	 * \param[in]       lines: Number of display lines
+	 */
+	void LCD_init(uint8_t width, uint8_t lines) {
+#endif
+
+	dWidth = width;
+	dLines = lines;
+
+	//LCD_backlight(LCD_ON);
 
 	HAL_Delay(40);
 
@@ -194,7 +154,10 @@ HAL_StatusTypeDef LCD_init(I2C_HandleTypeDef *_i2c, uint8_t dAddr, uint8_t width
 	LCD_sendCmd(displayControlValue);
 	LCD_clear();
 	LCD_sendCmd(0x06);
+
+#if LCD_INTERFACE == 0
 	return HAL_OK;
+#endif
 }
 /**
  * \brief           Function of printing char on LCD
@@ -322,18 +285,7 @@ void LCD_home(void) {
 	currentY = 0;
 	HAL_Delay(2);
 }
-/**
- * \brief           Backlight on/off function
- * \param[in]       state: Display backlight status. LCD_OFF - backlight off, LCD_ON - backlight on
- */
-void LCD_backlight(LCD_state_t state) {
-	if (state) {
-		bus |= (1<<3);
-	} else {
-		bus &= ~(1<<3);
-	}
-	_writeBus();
-}
+
 /**
  * \brief           Display on/off function
  * \note			The function does not clear the display.
@@ -422,5 +374,100 @@ void LCD_printf(const char * __restrict format, ...) {
 	va_start(argptr, format);
 	vfprintf(stderr, format, argptr);
 	va_end(argptr);
+}
+#endif
+
+#ifdef LCD_CYRILLIC_SUPPORT
+/**
+ * \brief           Converting a Cyrillic character from ASCII to a display character generator table
+ * \param[in]       c: ASCII character
+ * \return          LCD CGRAM character
+ */
+static char _ASCIItoDisplay(char c) {
+	const char cyrillicAlphabet[64] = {
+	  //A    Б    В    Г    Д    Е    Ж    З    И    Й    К    Л    М    Н    О    П
+		0x41,0xA0,0x42,0xA1,0xE0,0x45,0xA3,0xA4,0xA5,0xA6,0x4B,0xA7,0x4D,0x48,0x4F,0xA8,
+	  //Р    С    Т    У    Ф    Х    Ц    Ч    Ш    Щ    Ъ    Ы    Ь    Э    Ю    Я
+		0x50,0x43,0x54,0xA9,0xAA,0x58,0xE1,0xAB,0xAC,0xE2,0xAD,0xAE,0x62,0xAF,0xB0,0xB1,
+	  //а    б    в    г    д    е    ж    з    и    й    к    л    м    н    о    п
+		0x61,0xB2,0xB3,0xB4,0xE3,0x65,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0x6F,0xBE,
+	  //р    с    т    у    ф    х    ц    ч    ш    щ    ъ    ы    ь    э    ю    я
+		0x70,0x63,0xBF,0x79,0xE4,0x78,0xE5,0xC0,0xC1,0xE6,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,
+	};
+	return cyrillicAlphabet[c-192];
+}
+#endif
+
+#ifdef LCD_CYRILLIC_PSEUDOSUPPORT
+const uint8_t cyrillicBitmaps[][8] = {
+	{0x1F, 0x11, 0x10, 0x1E, 0x11, 0x11, 0x1E, 0x00}, //Б
+	{0x1F, 0x11, 0x10, 0x10, 0x10, 0x10, 0x10, 0x00}, //Г
+	{0x15, 0x15, 0x15, 0x0E, 0x15, 0x15, 0x15, 0x00}, //Ж
+	{0x11, 0x11, 0x13, 0x15, 0x19, 0x11, 0x11, 0x00}, //И
+	{0x0A, 0x04, 0x11, 0x13, 0x15, 0x19, 0x11, 0x00}, //Й
+	{0x0F, 0x05, 0x05, 0x05, 0x05, 0x15, 0x09, 0x00}, //Л
+	{0x1F, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x00}, //П
+	{0x04, 0x0E, 0x15, 0x15, 0x15, 0x0E, 0x04, 0x00}, //Ф
+	{0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x1F, 0x01}, //Ц
+	{0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x1F, 0x00}, //Ш
+	{0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x1F, 0x01}, //Щ
+	{0x18, 0x08, 0x08, 0x0E, 0x09, 0x09, 0x0E, 0x00}, //Ъ
+	{0x11, 0x11, 0x11, 0x19, 0x15, 0x15, 0x19, 0x00}, //Ы
+	{0x0E, 0x11, 0x01, 0x07, 0x01, 0x11, 0x0E, 0x00}, //Э
+	{0x12, 0x15, 0x15, 0x1D, 0x15, 0x15, 0x12, 0x00}, //Ю
+	{0x0F, 0x11, 0x11, 0x0F, 0x05, 0x09, 0x11, 0x00}, //Я
+	{0x00, 0x00, 0x0F, 0x05, 0x09, 0x1F, 0x11, 0x00}, //д
+	{0x00, 0x00, 0x15, 0x15, 0x0E, 0x15, 0x15, 0x00}, //ж
+	{0x00, 0x04, 0x04, 0x0E, 0x15, 0x15, 0x0E, 0x04}, //ф
+	{0x00, 0x00, 0x12, 0x12, 0x12, 0x12, 0x1F, 0x01}, //ц
+	{0x00, 0x00, 0x15, 0x15, 0x15, 0x15, 0x1F, 0x00}, //ш
+	{0x00, 0x00, 0x15, 0x15, 0x15, 0x15, 0x1F, 0x01}, //щ
+	{0x00, 0x00, 0x18, 0x08, 0x0E, 0x09, 0x0E, 0x00}, //ъ
+	{0x00, 0x00, 0x11, 0x11, 0x19, 0x15, 0x19, 0x00}, //ы
+	{0x00, 0x00, 0x0E, 0x11, 0x07, 0x11, 0x0E, 0x00}, //э
+	{0x00, 0x00, 0x12, 0x15, 0x1D, 0x15, 0x12, 0x00}, //ю
+	{0x00, 0x00, 0x0F, 0x11, 0x0F, 0x09, 0x11, 0x00}, //я
+};
+
+/**
+ * \brief           Converting a Cyrillic character from ASCII to a display character generator table
+ * \param[in]       c: ASCII character
+ * \return          LCD CGRAM character
+ */
+static char _ASCIItoDisplay(char c) {
+	const char cyrillicAlphabet[64] = {
+	  //A    Б    В    Г    Д    Е    Ж    З    И    Й    К    Л    М    Н    О    П
+		'A', 0,  'B',  1,   'D', 'E', 2,  '3',  3,   4,  'K',  5,  'M', 'H', 'O',  6,
+	  //Р    С    Т    У    Ф    Х    Ц    Ч    Ш    Щ    Ъ    Ы    Ь    Э    Ю    Я
+	    'P', 'C', 'T', 'Y', 7,  'X',  8,   '4', 9,   10,  11,  12, 'b',  13,  14,  15,
+	  //а    б    в    г    д    е    ж    з    и    й    к    л    м    н    о    п
+		'a', '6', 'B', 0xD4,16,  'e', 17,  '3', 'u', 'u', 'k', 0xF7,'m', 'H', 'o', 'n',
+	  //р    с    т    у    ф    х    ц    ч    ш    щ    ъ    ы    ь    э    ю    я
+		'p', 'c', 'T', 'y', 18, 'x',  19,  '4', 20,  21,  22,  23,  'b', 24,  25,  26
+	};
+	if(cyrillicAlphabet[c-192] < 32) {
+		static uint8_t i = 0;
+		static char onDisplayCharacters[8];
+
+		int8_t f = -1;
+		for(uint8_t b = 0; b < 8; b++) {
+			if(onDisplayCharacters[b] == c) {
+				f = b;
+			}
+		}
+
+		if (f == -1) {
+			LCD_createChar(i, cyrillicBitmaps[(uint8_t)(cyrillicAlphabet[c-192])]);
+			onDisplayCharacters[i] = c;
+			uint8_t a = i;
+			if(++i > 7) i = 0;
+			return a;
+		} else {
+			return f;
+		}
+	}
+
+
+	return cyrillicAlphabet[c-192];
 }
 #endif
