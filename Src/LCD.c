@@ -98,10 +98,24 @@ static char _ASCIItoDisplay(char c) {
 	};
 	if(cyrillicAlphabet[c-192] < 32) {
 		static uint8_t i = 0;
-		LCD_createChar(i, cyrillicBitmaps[(uint8_t)(cyrillicAlphabet[c-192])]);
-		uint8_t a = i;
-		if(++i > 7) i = 0;
-		return a;
+		static char onDisplayCharacters[8];
+
+		int8_t f = -1;
+		for(uint8_t b = 0; b < 8; b++) {
+			if(onDisplayCharacters[b] == c) {
+				f = b;
+			}
+		}
+
+		if (f == -1) {
+			LCD_createChar(i, cyrillicBitmaps[(uint8_t)(cyrillicAlphabet[c-192])]);
+			onDisplayCharacters[i] = c;
+			uint8_t a = i;
+			if(++i > 7) i = 0;
+			return a;
+		} else {
+			return f;
+		}
 	}
 
 

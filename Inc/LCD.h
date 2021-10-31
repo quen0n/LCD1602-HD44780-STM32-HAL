@@ -15,15 +15,17 @@
 //Включить поддержку кириллических символов
 //Внимание! Работает только на дисплеях с русскими символами в памяти!
 //Для китайских используйте псевдоподдержку кириллицы
+//Если вы используйте STM32 CubeIDE включите поддержку Unicode
 //#define LCD_CYRILLIC_SUPPORT
 
 //Включить псевдоподдержку кириллицы
 //Если в дисплее нет подходящего символа, то библиотека загружает
 //свой с помощью LCD_createChar. Подходит для японских дисплеев
-#define LCD_CYRILLIC_PSEUDOSUPPORT
+//Если вы используйте STM32 CubeIDE включите поддержку Unicode
+//#define LCD_CYRILLIC_PSEUDOSUPPORT
 
 //Enable Unicode support
-#define LCD_UNICODE_SUPPORT
+//#define LCD_UNICODE_SUPPORT
 
 //Enable redirect printf to LCD
 #define LCD_PRINTF_ENABLE
@@ -75,8 +77,8 @@ void LCD_cursorControl(LCD_state_t state);
 void LCD_printf(const char * __restrict format, ...);
 #endif
 
-//TODO: Псевдоподдержка русского языка
 //TODO: Поддержка обычных дисплеев с 4 и 8-битной схемой
 //TODO: Проверить другие стандартные фичи и написать функции
 //TODO: Выбор адреса дисплея для возможности использования двух и более
 //TODO: Подробное комментирование функций, шапки по стандарту
+//TODO: Набор прикольных значков из знакогенератора (стрелочки, градус Цельсия и т.д)
